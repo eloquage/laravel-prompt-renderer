@@ -17,7 +17,7 @@ jobs:
       OPENAI_API_KEY: sk-test
       MEILISEARCH_HOST: http://localhost:7700
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
