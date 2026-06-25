@@ -1,37 +1,40 @@
 <?php
 
-namespace VendorName\Skeleton\Tests;
+namespace Eloquage\LaravelPromptRenderer\Tests;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Eloquage\LaravelPromptRenderer\LaravelPromptRendererServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
-use VendorName\Skeleton\SkeletonServiceProvider;
 
 class TestCase extends Orchestra
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'VendorName\\Skeleton\\Database\\Factories\\'.class_basename($modelName).'Factory'
-        );
-    }
-
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
-            SkeletonServiceProvider::class,
+            LaravelPromptRendererServiceProvider::class,
         ];
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'testing');
 
-        /*
-         foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/../database/migrations') as $migration) {
-            (include $migration->getRealPath())->up();
-         }
-         */
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+
+        $app['config']->set('cache.default', 'array');
+        $app['config']->set('cache.stores.array', [
+            'driver' => 'array',
+            'serialize' => false,
+        ]);
+    }
+
+    protected function runPromptTemplatesMigration(): void
+    {
+        $migration = include dirname(__DIR__).'/database/migrations/create_prompt_templates_table.php.stub';
+
+        $migration->up();
     }
 }
