@@ -28,16 +28,17 @@ class LaravelPromptRendererServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $packageViews = $this->package->basePath('/../resources/views');
         $publishedPath = resource_path('views/vendor/prompt-renderer');
 
         if (is_dir($publishedPath)) {
             View::prependLocation($publishedPath);
         }
 
-        View::addLocation($this->package->basePath('/resources/views'));
+        View::addLocation($packageViews);
 
         $this->publishes([
-            $this->package->basePath('/resources/views') => $publishedPath,
+            $packageViews => $publishedPath,
         ], 'prompt-renderer-views');
     }
 }
