@@ -3,6 +3,7 @@
 # Laravel Prompt Renderer
 
 [![Tests](https://github.com/eloquage/laravel-prompt-renderer/actions/workflows/run-tests.yml/badge.svg)](https://github.com/eloquage/laravel-prompt-renderer/actions/workflows/run-tests.yml)
+[![Latest Version](https://img.shields.io/packagist/v/eloquage/laravel-prompt-renderer)](https://packagist.org/packages/eloquage/laravel-prompt-renderer)
 [![License](https://img.shields.io/github/license/eloquage/laravel-prompt-renderer)](LICENSE)
 
 Render Blade prompt templates through one API with Blade, database, cache, stack, or custom sources.
@@ -10,8 +11,6 @@ Render Blade prompt templates through one API with Blade, database, cache, stack
 **Requirements:** PHP 8.4+ and Laravel 11, 12, or 13.
 
 ## Installation
-
-This repository is currently private and its package is not registered on Packagist. The command below is the intended install command when the release is publicly available.
 
 ```bash
 composer require eloquage/laravel-prompt-renderer
