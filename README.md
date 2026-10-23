@@ -1,6 +1,14 @@
+<p align="center"><img src="art/banner.png" alt="Laravel Prompt Renderer" width="100%"></p>
+
 # Laravel Prompt Renderer
 
-Configurable Blade prompt rendering for Laravel AI agents with pluggable template sources.
+[![Tests](https://github.com/eloquage/laravel-prompt-renderer/actions/workflows/run-tests.yml/badge.svg)](https://github.com/eloquage/laravel-prompt-renderer/actions/workflows/run-tests.yml)
+[![Latest Version](https://img.shields.io/packagist/v/eloquage/laravel-prompt-renderer)](https://packagist.org/packages/eloquage/laravel-prompt-renderer)
+[![License](https://img.shields.io/github/license/eloquage/laravel-prompt-renderer)](LICENSE)
+
+Render Blade prompt templates through one API with Blade, database, cache, stack, or custom sources.
+
+**Requirements:** PHP 8.4+ and Laravel 11, 12, or 13.
 
 ## Installation
 
@@ -11,7 +19,7 @@ composer require eloquage/laravel-prompt-renderer
 Publish config (optional):
 
 ```bash
-php artisan vendor:publish --tag=laravel-prompt-renderer-config
+php artisan vendor:publish --tag=prompt-renderer-config
 ```
 
 Publish views (optional):
@@ -23,7 +31,7 @@ php artisan vendor:publish --tag=prompt-renderer-views
 Publish migrations when using the database or cache drivers:
 
 ```bash
-php artisan vendor:publish --tag=laravel-prompt-renderer-migrations
+php artisan vendor:publish --tag=prompt-renderer-migrations
 php artisan migrate
 ```
 
