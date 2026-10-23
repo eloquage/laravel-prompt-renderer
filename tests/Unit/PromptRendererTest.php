@@ -1,6 +1,11 @@
 <?php
 
+use Eloquage\LaravelPromptRenderer\Data\ResolvedPrompt;
+use Eloquage\LaravelPromptRenderer\Facades\PromptRenderer as PromptRendererFacade;
+use Eloquage\LaravelPromptRenderer\Managers\PromptSourceManager;
 use Eloquage\LaravelPromptRenderer\PromptRenderer;
+use Eloquage\LaravelPromptRenderer\PromptSources\BladePromptSource;
+use Eloquage\LaravelPromptRenderer\PromptSources\StackPromptSource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
@@ -133,4 +138,89 @@ it('caches database template contents', function () {
     expect($firstQueryCount)->toBeGreaterThan(0)
         ->and($secondQueryCount)->toBe(0)
         ->and($renderer->render('cache-test', ['context' => 'second']))->toBe('Cached second.');
+});
+
+it('renders through the facade', function () {
+    expect(PromptRendererFacade::render('example', ['context' => 'facade']))
+        ->toContain('facade');
+});
+
+it('renders from an explicitly selected source', function () {
+    $this->runPromptTemplatesMigration();
+
+    DB::table('prompt_templates')->insert([
+        'key' => 'prompts.explicit-source',
+        'content' => 'Explicit {{ $context }}.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    expect(app(PromptRenderer::class)->render(
+        'explicit-source',
+        ['context' => 'database'],
+        source: 'database',
+    ))->toBe('Explicit database.');
+});
+
+it('reads Blade template contents and reports missing templates', function () {
+    $source = new BladePromptSource;
+
+    expect($source->contents('prompts.example'))->toContain('example agent')
+        ->and($source->exists('prompts.example'))->toBeTrue()
+        ->and($source->exists('prompts.missing'))->toBeFalse();
+
+    $source->contents('prompts.missing');
+})->throws(InvalidArgumentException::class, 'Prompt template not found: prompts.missing');
+
+it('uses the first matching driver in a stack for content and rendering', function () {
+    $this->runPromptTemplatesMigration();
+
+    DB::table('prompt_templates')->insert([
+        'key' => 'prompts.example',
+        'content' => 'Database wins for {{ $context }}.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    config()->set('prompt-renderer.stack', ['database', 'blade']);
+    $stack = app(PromptSourceManager::class)->driver('stack');
+
+    expect($stack)->toBeInstanceOf(StackPromptSource::class)
+        ->and($stack->contents('prompts.example'))->toBe('Database wins for {{ $context }}.')
+        ->and(app(PromptRenderer::class)->render('example', ['context' => 'stack'], source: 'stack'))
+        ->toBe('Database wins for stack.');
+});
+
+it('resolves prompt values as either views or strings', function () {
+    $view = ResolvedPrompt::view('prompts.example');
+    $string = ResolvedPrompt::string('inline content');
+
+    expect($view->isView())->toBeTrue()
+        ->and($view->isString())->toBeFalse()
+        ->and($string->isString())->toBeTrue()
+        ->and($string->isView())->toBeFalse();
+});
+
+it('returns an error for an empty database template', function () {
+    $this->runPromptTemplatesMigration();
+
+    app(PromptSourceManager::class)->driver('database')->contents('prompts.empty');
+})->throws(InvalidArgumentException::class, 'Prompt template not found: prompts.empty');
+
+it('caches template content for cache source lookups', function () {
+    $this->runPromptTemplatesMigration();
+
+    DB::table('prompt_templates')->insert([
+        'key' => 'prompts.cached-contents',
+        'content' => 'Cached content.',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    config()->set('prompt-renderer.default_source', 'cache');
+    $cache = app(PromptSourceManager::class)->driver('cache');
+
+    expect($cache->exists('prompts.cached-contents'))->toBeTrue()
+        ->and($cache->contents('prompts.cached-contents'))->toBe('Cached content.')
+        ->and($cache->exists('prompts.cached-contents'))->toBeTrue();
 });
